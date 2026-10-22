@@ -6,759 +6,114 @@
     <title>협력업체 안전관리 시스템 (PCM Portal)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons CDN -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Noto Sans KR', 'sans-serif'],
-                    },
-                    colors: {
-                        navy: {
-                            800: '#1E293B',
-                            900: '#0F172A',
-                            950: '#020617',
-                        },
-                        safety: {
-                            amber: '#F59E0B',
-                            red: '#EF4444',
-                            green: '#10B981',
-                            blue: '#3B82F6',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-        /* Custom scrollbar for modern feel */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 flex flex-col min-h-screen">
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-navy-900 text-white sticky top-0 z-40 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo & System Title -->
-                <div class="flex items-center space-x-3">
-                    <div class="bg-amber-500 text-slate-900 p-2 rounded-lg font-black flex items-center justify-center w-10 h-10 shadow">
-                        <i class="fa-solid fa-hard-hat text-xl"></i>
-                    </div>
-                    <div>
-                        <span class="text-lg font-bold tracking-tight text-white block">협력업체 안전관리 시스템</span>
-                        <span class="text-xs text-amber-400 font-medium">Partner Safety Management Portal (PCM)</span>
-                    </div>
+    <!-- 🔐 첫 화면: 로그인 및 회원가입 통합 창 -->
+    <div id="auth-view" class="flex-1 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+            <!-- 로고 및 안내 -->
+            <div class="text-center mb-6">
+                <div class="bg-amber-500 text-slate-900 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-md">
+                    <i class="fa-solid fa-helmet-safety text-2xl"></i>
                 </div>
-
-                <!-- Header Search & Actions -->
-                <div class="flex items-center space-x-4">
-                    <!-- Global Search Box -->
-                    <div class="relative hidden md:block w-64">
-                        <input type="text" id="globalSearchInput" onkeyup="handleGlobalSearch()" placeholder="업체명, 공종, 현장대리인 검색..." class="w-full bg-slate-800 text-xs text-white placeholder-slate-400 rounded-lg pl-9 pr-4 py-2 border border-slate-700 focus:outline-none focus:border-amber-500 transition">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    </div>
-
-                    <!-- Notification Badge -->
-                    <button class="relative p-2 text-slate-300 hover:text-white transition rounded-full hover:bg-slate-800" onclick="showToast('신규 안전지침 개정안이 등록되었습니다.')">
-                        <i class="fa-regular fa-bell text-lg"></i>
-                        <span class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">3</span>
-                    </button>
-
-                    <!-- User Profile Badge -->
-                    <div class="flex items-center space-x-2 pl-3 border-l border-slate-700">
-                        <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-amber-400 font-bold text-xs border border-amber-500">
-                            안전
-                        </div>
-                        <div class="hidden sm:block text-left text-xs">
-                            <div class="font-semibold text-white">김안전 팀장</div>
-                            <div class="text-slate-400 text-[10px]">EHS 총괄 관리자</div>
-                        </div>
-                    </div>
-                </div>
+                <h1 class="text-2xl font-bold text-slate-900">Safety PCM Portal</h1>
+                <p class="text-sm text-slate-500 mt-1">협력업체 안전관리 통합 시스템</p>
             </div>
-        </div>
 
-        <!-- Navigation Tabs Bar -->
-        <nav class="bg-slate-800 border-t border-slate-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex space-x-1 overflow-x-auto text-xs font-medium text-slate-300 py-1">
-                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 bg-amber-500 text-slate-950 font-bold">
-                        <i class="fa-solid fa-chart-pie"></i><span>대시보드</span>
-                    </button>
-                    <button onclick="switchTab('contractors')" id="tab-contractors" class="px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2">
-                        <i class="fa-solid fa-building-shield"></i><span>협력업체 관리</span>
-                    </button>
-                    <button onclick="switchTab('ptw')" id="tab-ptw" class="px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2">
-                        <i class="fa-solid fa-file-signature"></i><span>안전점검 / PTW</span>
-                    </button>
-                    <button onclick="switchTab('risk')" id="tab-risk" class="px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2">
-                        <i class="fa-solid fa-triangle-exclamation"></i><span>위험성평가</span>
-                    </button>
-                    <button onclick="switchTab('education')" id="tab-education" class="px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2">
-                        <i class="fa-solid fa-user-graduate"></i><span>안전교육</span>
-                    </button>
-                    <button onclick="switchTab('notices')" id="tab-notices" class="px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2">
-                        <i class="fa-solid fa-book-bookmark"></i><span>공지 및 지침</span>
-                    </button>
-                </div>
+            <!-- 🌐 구글 소셜 회원가입/로그인 버튼 (추천) -->
+            <button id="google-btn" onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2.5 rounded-xl transition shadow-sm mb-4">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                Google 계정으로 계속하기
+            </button>
+
+            <div class="flex items-center my-4">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="px-3 text-xs text-slate-400">또는 이메일 로그인</span>
+                <div class="flex-1 border-t border-slate-200"></div>
             </div>
-        </nav>
-    </header>
 
-    <!-- Main Content Body -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-        <!-- KPI Summary Cards Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <!-- Card 1: Registered Contractors -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-slate-300 transition">
+            <!-- 📧 일반 이메일 로그인/가입 폼 -->
+            <form id="email-auth-form" class="space-y-4">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">등록 협력업체</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1" id="kpiTotalContractors">24<span class="text-xs font-normal text-slate-500 ml-1">개사</span></h3>
-                    <p class="text-[11px] text-emerald-600 mt-1 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i>전월 대비 +2개사</p>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">이메일</label>
+                    <input type="email" id="auth-email" required placeholder="example@company.com" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
                 </div>
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-city"></i>
-                </div>
-            </div>
-
-            <!-- Card 2: Active Work Sites -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-slate-300 transition">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">진행중 작업 현장</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1">18<span class="text-xs font-normal text-slate-500 ml-1">개 공종</span></h3>
-                    <p class="text-[11px] text-slate-500 mt-1">고위험 작업: <span class="font-bold text-amber-600">5건</span></p>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">비밀번호</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
                 </div>
-                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-person-digging"></i>
-                </div>
-            </div>
 
-            <!-- Card 3: Pending Risk Assessments -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-slate-300 transition">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">위험성평가 미비</p>
-                    <h3 class="text-2xl font-black text-red-600 mt-1" id="kpiPendingRisk">3<span class="text-xs font-normal text-slate-500 ml-1">건</span></h3>
-                    <p class="text-[11px] text-red-500 mt-1 font-semibold flex items-center"><i class="fa-solid fa-circle-exclamation mr-1"></i>즉시 제출 보완 필요</p>
-                </div>
-                <div class="w-12 h-12 bg-red-50 text-red-500 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-clipboard-question"></i>
-                </div>
-            </div>
-
-            <!-- Card 4: Open Safety Violations -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-slate-300 transition">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">미조치 결함사항</p>
-                    <h3 class="text-2xl font-black text-amber-600 mt-1">4<span class="text-xs font-normal text-slate-500 ml-1">건</span></h3>
-                    <p class="text-[11px] text-amber-600 mt-1">시정조치 기한 임박</p>
-                </div>
-                <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-            </div>
-
-            <!-- Card 5: Overall Safety Compliance Rate -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-slate-300 transition">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">전체 안전 준수율</p>
-                    <h3 class="text-2xl font-black text-emerald-600 mt-1">94.2<span class="text-xs font-normal text-slate-500 ml-1">%</span></h3>
-                    <p class="text-[11px] text-emerald-600 mt-1"><i class="fa-solid fa-arrow-up mr-1"></i>목표 90% 달성</p>
-                </div>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filter Controls & Action Bar -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <!-- Search & Filters -->
-                <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                    <!-- Search Input -->
-                    <div class="relative min-w-[200px] flex-1 sm:flex-initial">
-                        <input type="text" id="filterSearchInput" onkeyup="applyFilters()" placeholder="업체명/대리인 검색..." class="w-full bg-slate-50 border border-slate-300 text-xs rounded-lg pl-8 pr-3 py-2 text-slate-800 focus:outline-none focus:border-slate-500">
-                        <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
-                    </div>
-
-                    <!-- Filter Grade -->
-                    <select id="filterGrade" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-xs rounded-lg px-3 py-2 text-slate-700 font-medium focus:outline-none">
-                        <option value="ALL">전체 안전등급</option>
-                        <option value="A">A 등급 (우수)</option>
-                        <option value="B">B 등급 (양호)</option>
-                        <option value="C">C 등급 (관심)</option>
-                        <option value="D">D 등급 (경고)</option>
-                    </select>
-
-                    <!-- Filter Trade -->
-                    <select id="filterTrade" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-xs rounded-lg px-3 py-2 text-slate-700 font-medium focus:outline-none">
-                        <option value="ALL">전체 공종</option>
-                        <option value="토공">토공</option>
-                        <option value="골조">골조</option>
-                        <option value="전기">전기</option>
-                        <option value="설비">설비</option>
-                        <option value="도장">도장</option>
-                        <option value="철골">철골</option>
-                    </select>
-
-                    <!-- Filter Compliance Status -->
-                    <select id="filterStatus" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-xs rounded-lg px-3 py-2 text-slate-700 font-medium focus:outline-none">
-                        <option value="ALL">전체 상태</option>
-                        <option value="정상">정상</option>
-                        <option value="점검필요">점검필요</option>
-                        <option value="시정명령">시정명령</option>
-                    </select>
-
-                    <!-- Reset Filter Button -->
-                    <button onclick="resetFilters()" class="text-xs text-slate-500 hover:text-slate-800 underline px-1">
-                        <i class="fa-solid fa-rotate-right mr-1"></i>초기화
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button" onclick="handleEmailLogin()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-lg text-sm transition">
+                        로그인
+                    </button>
+                    <button type="button" onclick="handleEmailSignUp()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 rounded-lg text-sm transition border border-slate-300">
+                        간편 회원가입
                     </button>
                 </div>
-
-                <!-- Add Contractor Action Button -->
-                <div class="flex items-center space-x-2">
-                    <button onclick="openModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-sm transition flex items-center justify-center space-x-2 w-full lg:w-auto">
-                        <i class="fa-solid fa-plus text-amber-400"></i>
-                        <span>신규 협력업체 등록</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Partner Status Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-            <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-list-check text-slate-600"></i>
-                    <h2 class="font-bold text-sm text-slate-800">협력업체 안전관리 현황 목록</h2>
-                </div>
-                <span class="text-xs text-slate-500 font-medium" id="tableCountText">총 6개 업체 표시 중</span>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
-                            <th class="py-3.5 px-4">협력업체명</th>
-                            <th class="py-3.5 px-4">공종</th>
-                            <th class="py-3.5 px-4 text-center">안전등급</th>
-                            <th class="py-3.5 px-4">현장대리인 / 연락처</th>
-                            <th class="py-3.5 px-4 text-center">PTW / 위험성평가</th>
-                            <th class="py-3.5 px-4 text-center">준수 상태</th>
-                            <th class="py-3.5 px-4 text-center">관리 조치</th>
-                        </tr>
-                    </thead>
-                    <tbody id="contractorTableBody" class="divide-y divide-slate-200 text-slate-700">
-                        <!-- Dynamic Rows Generated by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Safety Notices & Guidelines Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Column 1: Safety Bulletins -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-bullhorn text-amber-500 text-base"></i>
-                            <h3 class="font-bold text-sm text-slate-800">안전보건 공지사항</h3>
-                        </div>
-                        <a href="#" class="text-[11px] text-slate-500 hover:text-slate-800">더보기 <i class="fa-solid fa-chevron-right text-[9px]"></i></a>
-                    </div>
-                    <ul class="space-y-3">
-                        <li class="flex items-start justify-between text-xs hover:bg-slate-50 p-1.5 rounded transition cursor-pointer" onclick="showToast('공지 내용을 확인하였습니다.')">
-                            <div class="flex items-start space-x-2">
-                                <span class="bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5">긴급</span>
-                                <span class="text-slate-700 font-medium hover:underline line-clamp-1">춘하계 고위험 작업시 특별안전 점검 지침</span>
-                            </div>
-                            <span class="text-[10px] text-slate-400 whitespace-nowrap ml-2">2026.10.20</span>
-                        </li>
-                        <li class="flex items-start justify-between text-xs hover:bg-slate-50 p-1.5 rounded transition cursor-pointer" onclick="showToast('공지 내용을 확인하였습니다.')">
-                            <div class="flex items-start space-x-2">
-                                <span class="bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5">일반</span>
-                                <span class="text-slate-700 font-medium hover:underline line-clamp-1">협력업체 안전보건 평가 개정 규정 안내</span>
-                            </div>
-                            <span class="text-[10px] text-slate-400 whitespace-nowrap ml-2">2026.10.15</span>
-                        </li>
-                        <li class="flex items-start justify-between text-xs hover:bg-slate-50 p-1.5 rounded transition cursor-pointer" onclick="showToast('공지 내용을 확인하였습니다.')">
-                            <div class="flex items-start space-x-2">
-                                <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5">교육</span>
-                                <span class="text-slate-700 font-medium hover:underline line-clamp-1">4분기 신규 입상자 정기 안전교육 일정</span>
-                            </div>
-                            <span class="text-[10px] text-slate-400 whitespace-nowrap ml-2">2026.10.08</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Column 2: Standard PTW Downloads -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-file-arrow-down text-blue-500 text-base"></i>
-                            <h3 class="font-bold text-sm text-slate-800">안전작업허가서 (PTW) 서식</h3>
-                        </div>
-                        <a href="#" class="text-[11px] text-slate-500 hover:text-slate-800">전체 양식</a>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <a href="javascript:void(0)" onclick="downloadForm('화기작업 허가서')" class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 flex items-center space-x-2 transition">
-                            <i class="fa-solid fa-fire-flame-curved text-orange-500 text-sm"></i>
-                            <span class="font-medium text-slate-700">화기작업 허가서</span>
-                        </a>
-                        <a href="javascript:void(0)" onclick="downloadForm('밀폐공간 출입 허가서')" class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 flex items-center space-x-2 transition">
-                            <i class="fa-solid fa-door-closed text-slate-600 text-sm"></i>
-                            <span class="font-medium text-slate-700">밀폐공간 허가서</span>
-                        </a>
-                        <a href="javascript:void(0)" onclick="downloadForm('고소작업 허가서')" class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 flex items-center space-x-2 transition">
-                            <i class="fa-solid fa-person-falling-burst text-amber-500 text-sm"></i>
-                            <span class="font-medium text-slate-700">고소작업 허가서</span>
-                        </a>
-                        <a href="javascript:void(0)" onclick="downloadForm('중장비 양중 허가서')" class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 flex items-center space-x-2 transition">
-                            <i class="fa-solid fa-truck-monster text-emerald-600 text-sm"></i>
-                            <span class="font-medium text-slate-700">중장비 양중 서식</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Column 3: Quick Action Manual -->
-            <div class="bg-gradient-to-br from-slate-900 to-navy-900 text-white p-5 rounded-xl shadow-md flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center space-x-2 mb-3">
-                        <span class="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded">지침</span>
-                        <h3 class="font-bold text-sm text-white">PCM 매뉴얼 및 시정조치절차</h3>
-                    </div>
-                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
-                        협력업체 안전등급 C등급 이하 지정 시 일주일 이내에 재발방지대책 보고서를 안전관리팀에 제출해야 합니다.
-                    </p>
-                </div>
-                <div class="pt-3 border-t border-slate-700/60 flex items-center justify-between">
-                    <span class="text-[11px] text-amber-400 font-medium">담당: EHS 기술지원팀</span>
-                    <button onclick="showToast('안전관리 가이드북 PDF를 다운로드합니다.')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded transition flex items-center space-x-1">
-                        <i class="fa-solid fa-download"></i>
-                        <span>가이드북</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-slate-500 text-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div>
-                <p class="font-semibold text-slate-700">협력업체 안전관리 시스템 (PCM - Partner Compliance Management)</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">© 2026 EHS Safety Portal System. All rights reserved.</p>
-            </div>
-            <div class="flex items-center space-x-4 text-[11px]">
-                <a href="#" class="hover:text-slate-800">개인정보 처리방침</a>
-                <span>|</span>
-                <a href="#" class="hover:text-slate-800">안전수칙 지침서</a>
-                <span>|</span>
-                <a href="#" class="hover:text-slate-800">시스템 문의 (내선 502)</a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Interactive Modal: Register New Partner Contractor -->
-    <div id="registerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
-            <!-- Modal Header -->
-            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-building-circle-check text-amber-400 text-base"></i>
-                    <h3 class="font-bold text-sm">신규 협력업체 등록</h3>
-                </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Modal Form -->
-            <form id="addPartnerForm" onsubmit="handleRegisterPartner(event)" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">협력업체명 <span class="text-red-500">*</span></label>
-                    <input type="text" id="modalCompanyName" required placeholder="예: (주)한국건설" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">공종 (작업구분) <span class="text-red-500">*</span></label>
-                        <select id="modalTrade" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                            <option value="">공종 선택</option>
-                            <option value="토공">토공</option>
-                            <option value="골조">골조</option>
-                            <option value="전기">전기</option>
-                            <option value="설비">설비</option>
-                            <option value="도장">도장</option>
-                            <option value="철골">철골</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">초기 안전등급 <span class="text-red-500">*</span></label>
-                        <select id="modalGrade" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                            <option value="A">A 등급 (우수)</option>
-                            <option value="B" selected>B 등급 (양호)</option>
-                            <option value="C">C 등급 (관심)</option>
-                            <option value="D">D 등급 (경고)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">현장대리인 / 안전담당자 <span class="text-red-500">*</span></label>
-                        <input type="text" id="modalManager" required placeholder="홍길동 소장" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">연락처 <span class="text-red-500">*</span></label>
-                        <input type="text" id="modalContact" required placeholder="010-1234-5678" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">PTW / 위험성평가 승인상태</label>
-                        <select id="modalPtwStatus" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                            <option value="승인완료">승인완료</option>
-                            <option value="검토중">검토중</option>
-                            <option value="미제출">미제출</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">준수 상태</label>
-                        <select id="modalComplianceStatus" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-600">
-                            <option value="정상">정상</option>
-                            <option value="점검필요">점검필요</option>
-                            <option value="시정명령">시정명령</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Action Footer -->
-                <div class="pt-4 border-t border-slate-200 flex justify-end space-x-2">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">취소</button>
-                    <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg transition">등록 저장</button>
-                </div>
+                <div id="auth-msg" class="text-xs text-center p-2 rounded hidden"></div>
             </form>
         </div>
     </div>
 
-    <!-- Notification Toast Element -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 text-xs flex items-center space-x-3 hidden z-50 transform transition-all duration-300">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
-        <span id="toastMsg">처리되었습니다.</span>
-    </div>
+    <!-- 📊 로그인 완료 후 메인 대시보드 화면 -->
+    <div id="app-view" class="hidden flex-1 flex flex-col">
+        <!-- 상단 헤더 -->
+        <header class="bg-slate-900 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-helmet-safety text-amber-400 text-2xl"></i>
+                    <span class="font-bold text-lg">Safety PCM Portal</span>
+                    <span id="user-role-badge" class="text-xs px-2.5 py-0.5 rounded-full font-semibold"></span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="user-email-display" class="text-sm text-slate-300"></span>
+                    <button onclick="handleLogout()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg transition border border-slate-700">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> 로그아웃
+                    </button>
+                </div>
+            </div>
+        </header>
 
-    <!-- Application JavaScript Logic -->
-    <script>
-        // Initial Dataset for Partner Contractors
-        let contractors = [
-            {
-                id: 1,
-                name: "(주)태성건설",
-                trade: "골조",
-                grade: "A",
-                manager: "김철수 소장",
-                contact: "010-3849-2011",
-                ptwStatus: "승인완료",
-                compliance: "정상"
-            },
-            {
-                id: 2,
-                name: "한일이엔지",
-                trade: "전기",
-                grade: "B",
-                manager: "이영희 팀장",
-                contact: "010-9122-4431",
-                ptwStatus: "승인완료",
-                compliance: "정상"
-            },
-            {
-                id: 3,
-                name: "대륙토건",
-                trade: "토공",
-                grade: "C",
-                manager: "박성호 소장",
-                contact: "010-5541-9082",
-                ptwStatus: "검토중",
-                compliance: "점검필요"
-            },
-            {
-                id: 4,
-                name: "삼원설비",
-                trade: "설비",
-                grade: "A",
-                manager: "최동식 부장",
-                contact: "010-8812-3049",
-                ptwStatus: "승인완료",
-                compliance: "정상"
-            },
-            {
-                id: 5,
-                name: "신계도장",
-                trade: "도장",
-                grade: "D",
-                manager: "정민우 팀장",
-                contact: "010-7112-9981",
-                ptwStatus: "미제출",
-                compliance: "시정명령"
-            },
-            {
-                id: 6,
-                name: "현대철골",
-                trade: "철골",
-                grade: "B",
-                manager: "강태공 소장",
-                contact: "010-4491-1120",
-                ptwStatus: "승인완료",
-                compliance: "정상"
-            }
-        ];
+        <!-- 메인 콘텐츠 -->
+        <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+            <!-- 📌 관리자 권한 전용 화면 -->
+            <div id="admin-section" class="hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-users-gear text-amber-600 mr-2"></i>협력업체 종합 관리 (관리자)</h2>
+                    <button onclick="alert('신규 협력업체 등록 폼')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold shadow transition">
+                        <i class="fa-solid fa-plus mr-1"></i> 협력업체 추가
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 text-slate-600 text-xs uppercase border-b">
+                            <tr>
+                                <th class="p-4">업체명</th>
+                                <th class="p-4">안전등급</th>
+                                <th class="p-4">공종</th>
+                                <th class="p-4">연락처</th>
+                                <th class="p-4">상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractor-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- 동적 대입 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        // Render Contractor Table Rows
-        function renderTable(data = contractors) {
-            const tbody = document.getElementById('contractorTableBody');
-            tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-8 text-slate-400">
-                            <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
-                            검색 조건에 일치하는 협력업체가 없습니다.
-                        </td>
-                    </tr>
-                `;
-                document.getElementById('tableCountText').innerText = '총 0개 업체 표시 중';
-                return;
-            }
-
-            data.forEach(item => {
-                // Safety Grade Color Badge
-                let gradeBadgeClass = "";
-                if (item.grade === 'A') gradeBadgeClass = "bg-emerald-100 text-emerald-800 border-emerald-300";
-                else if (item.grade === 'B') gradeBadgeClass = "bg-blue-100 text-blue-800 border-blue-300";
-                else if (item.grade === 'C') gradeBadgeClass = "bg-amber-100 text-amber-800 border-amber-300";
-                else gradeBadgeClass = "bg-red-100 text-red-800 border-red-300";
-
-                // PTW Status Badge
-                let ptwBadgeClass = "";
-                if (item.ptwStatus === '승인완료') ptwBadgeClass = "text-emerald-600 bg-emerald-50";
-                else if (item.ptwStatus === '검토중') ptwBadgeClass = "text-amber-600 bg-amber-50";
-                else ptwBadgeClass = "text-red-600 bg-red-50 font-bold";
-
-                // Compliance Badge
-                let compBadge = "";
-                if (item.compliance === '정상') {
-                    compBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-circle-check mr-1 text-[9px]"></i>정상</span>`;
-                } else if (item.compliance === '점검필요') {
-                    compBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700"><i class="fa-solid fa-triangle-exclamation mr-1 text-[9px]"></i>점검필요</span>`;
-                } else {
-                    compBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700"><i class="fa-solid fa-circle-exclamation mr-1 text-[9px]"></i>시정명령</span>`;
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 transition border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-bold text-slate-800 flex items-center space-x-2">
-                        <span>${item.name}</span>
-                    </td>
-                    <td class="py-3 px-4 font-medium text-slate-600">${item.trade}</td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="inline-block px-2.5 py-0.5 rounded-md font-bold text-xs border ${gradeBadgeClass}">
-                            ${item.grade} 등급
-                        </span>
-                    </td>
-                    <td class="py-3 px-4">
-                        <div class="font-medium text-slate-800">${item.manager}</div>
-                        <div class="text-[10px] text-slate-400">${item.contact}</div>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="px-2 py-1 rounded text-[11px] font-semibold ${ptwBadgeClass}">
-                            ${item.ptwStatus}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        ${compBadge}
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <div class="flex items-center justify-center space-x-1">
-                            <button onclick="viewDetail('${item.name}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px] rounded transition">
-                                상세
-                            </button>
-                            <button onclick="writeAssessment('${item.name}')" class="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-[11px] rounded transition">
-                                평가작성
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('tableCountText').innerText = `총 ${data.length}개 업체 표시 중`;
-            updateKPIs();
-        }
-
-        // Apply Multi-Filter Logic
-        function applyFilters() {
-            const searchVal = document.getElementById('filterSearchInput').value.toLowerCase().trim();
-            const gradeVal = document.getElementById('filterGrade').value;
-            const tradeVal = document.getElementById('filterTrade').value;
-            const statusVal = document.getElementById('filterStatus').value;
-
-            const filtered = contractors.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.manager.toLowerCase().includes(searchVal);
-                const matchesGrade = gradeVal === 'ALL' || item.grade === gradeVal;
-                const matchesTrade = tradeVal === 'ALL' || item.trade === tradeVal;
-                const matchesStatus = statusVal === 'ALL' || item.compliance === statusVal;
-
-                return matchesSearch && matchesGrade && matchesTrade && matchesStatus;
-            });
-
-            renderTable(filtered);
-        }
-
-        // Header Global Search Handler
-        function handleGlobalSearch() {
-            const query = document.getElementById('globalSearchInput').value;
-            document.getElementById('filterSearchInput').value = query;
-            applyFilters();
-        }
-
-        // Reset Filter Dropdowns & Inputs
-        function resetFilters() {
-            document.getElementById('filterSearchInput').value = '';
-            document.getElementById('globalSearchInput').value = '';
-            document.getElementById('filterGrade').value = 'ALL';
-            document.getElementById('filterTrade').value = 'ALL';
-            document.getElementById('filterStatus').value = 'ALL';
-            renderTable(contractors);
-            showToast('필터가 초기화되었습니다.');
-        }
-
-        // Tab Switching Logic
-        function switchTab(tabKey) {
-            const tabs = ['dashboard', 'contractors', 'ptw', 'risk', 'education', 'notices'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                if (btn) {
-                    btn.className = "px-4 py-2.5 rounded-md hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 text-slate-300";
-                }
-            });
-
-            const activeBtn = document.getElementById(`tab-${tabKey}`);
-            if (activeBtn) {
-                activeBtn.className = "px-4 py-2.5 rounded-md transition flex items-center space-x-2 bg-amber-500 text-slate-950 font-bold";
-            }
-
-            showToast(`'${activeBtn.innerText.trim()}' 메뉴로 이동하였습니다.`);
-        }
-
-        // Modal Open / Close Logic
-        function openModal() {
-            document.getElementById('registerModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('registerModal').classList.add('hidden');
-            document.getElementById('addPartnerForm').reset();
-        }
-
-        // Handle New Partner Registration Form Submission
-        function handleRegisterPartner(event) {
-            event.preventDefault();
-
-            const name = document.getElementById('modalCompanyName').value;
-            const trade = document.getElementById('modalTrade').value;
-            const grade = document.getElementById('modalGrade').value;
-            const manager = document.getElementById('modalManager').value;
-            const contact = document.getElementById('modalContact').value;
-            const ptwStatus = document.getElementById('modalPtwStatus').value;
-            const compliance = document.getElementById('modalComplianceStatus').value;
-
-            const newPartner = {
-                id: contractors.length + 1,
-                name,
-                trade,
-                grade,
-                manager,
-                contact,
-                ptwStatus,
-                compliance
-            };
-
-            contractors.unshift(newPartner);
-            renderTable(contractors);
-            closeModal();
-            showToast(`신규 협력업체 [${name}] 등록이 완료되었습니다.`);
-        }
-
-        // Update Dynamic KPI Counters
-        function updateKPIs() {
-            document.getElementById('kpiTotalContractors').innerHTML = `${contractors.length}<span class="text-xs font-normal text-slate-500 ml-1">개사</span>`;
-            const pendingRisk = contractors.filter(c => c.ptwStatus === '미제출' || c.ptwStatus === '검토중').length;
-            document.getElementById('kpiPendingRisk').innerHTML = `${pendingRisk}<span class="text-xs font-normal text-slate-500 ml-1">건</span>`;
-        }
-
-        // Action Handlers
-        function viewDetail(name) {
-            showToast(`[${name}] 업체의 상세 안전카드 프로필을 불러옵니다.`);
-        }
-
-        function writeAssessment(name) {
-            showToast(`[${name}] 정기 위험성평가 작성 페이지로 연결됩니다.`);
-        }
-
-        function downloadForm(title) {
-            showToast(`'${title}' 양식 서식이 다운로드되었습니다.`);
-        }
-
-        // Show Toast Notification
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMsg');
-            toastMsg.innerText = message;
-            
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        // Initialize App on DOM Load
-        window.onload = function() {
-            renderTable(contractors);
-        };
-    </script>
-</body>
-</html>
+            <!-- 📌 협력업체 권한 전용 화면 -->
+            <div id="partner-section" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fa-solid fa-file-shield text-emerald-600 mr-2">
