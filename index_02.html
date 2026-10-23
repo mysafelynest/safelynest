@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의안전 - 스마트 건설안전 관리 플랫폼</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter / Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f4f6f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Notification Toast / Alert Box -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] transition-transform duration-300 ease-in-out max-w-md w-full bg-slate-900 text-white px-5 py-4 rounded-xl shadow-2xl flex items-center justify-between border-l-4 border-amber-500">
+        <div class="flex items-center space-x-3">
+            <i id="toastIcon" class="fa-solid fa-circle-info text-amber-400 text-xl"></i>
+            <span id="toastMessage" class="text-sm font-medium">알림 메시지 내용</span>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white ml-4">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- MAIN NAVIGATION -->
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+                    <div class="bg-amber-500 text-slate-950 p-2 rounded-lg font-black text-xl flex items-center justify-center w-10 h-10 shadow-lg">
+                        <i class="fa-solid fa-helmet-safety"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight text-white">나의안전</span>
+                        <span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-semibold ml-2 border border-amber-500/30">건설안전관제</span>
+                    </div>
+                </div>
+
+                <!-- User Controls Header Bar -->
+                <div id="headerAuthNav" class="flex items-center space-x-3">
+                    <!-- Dynamic rendering based on login status -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- 1. LANDING & LOGIN VIEW (비로그인 상태) -->
+        <section id="landingView" class="space-y-8">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-amber-500 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-person-digging"></i>
+                </div>
+                <div class="max-w-2xl relative z-10 space-y-4">
+                    <span class="inline-block bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                        중대재해처벌법 완벽 대응
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-black leading-tight">
+                        건설 현장 안전 관리의 기준<br><span class="text-amber-400">나의안전관제 시스템</span>
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        실시간 재해 경보, 소통 창구, 현장 맞춤 법정 서류 관리 및 관제자 승인 기반 관리자 웹 통합 서비스를 제공합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Login / Signup Double Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- LOGIN FORM -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">시스템 로그인</h2>
+                            <p class="text-xs text-slate-500">등록된 계정으로 로그인해주세요.</p>
+                        </div>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">아이디 (사업자번호 또는 관제자ID)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <i class="fa-solid fa-id-card"></i>
+                                </span>
+                                <input type="text" id="loginId" required placeholder="예: 123-45-67890 또는 admin" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">비밀번호</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <input type="password" id="loginPw" required placeholder="비밀번호 입력" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center space-x-2">
+                            <span>로그인하기</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </form>
+
+                    <!-- Quick Demo Accounts Guide -->
+                    <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+                        <div class="font-bold text-slate-700 flex items-center justify-between">
+                            <span><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> 테스트 계정 안내</span>
+                        </div>
+                        <p class="text-slate-600">· 관제자 계정: ID <code class="bg-amber-100 text-amber-800 px-1 rounded font-bold">admin</code> / PW <code class="bg-amber-100 text-amber-800 px-1 rounded font-bold">admin123</code></p>
+                        <p class="text-slate-600">· 승인완료 건설사: ID <code class="bg-blue-100 text-blue-800 px-1 rounded font-bold">101-88-00123</code> / PW <code class="bg-blue-100 text-blue-800 px-1 rounded font-bold">1234</code></p>
+                        <p class="text-slate-600">· 승인대기 건설사: ID <code class="bg-orange-100 text-orange-800 px-1 rounded font-bold">202-77-99887</code> / PW <code class="bg-orange-100 text-orange-800 px-1 rounded font-bold">1234</code></p>
+                    </div>
+                </div>
+
+                <!-- NEW MEMBER SIGNUP FORM -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">건설회사 회원가입 신청</h2>
+                            <p class="text-xs text-slate-500">관제자의 승인 후 정식 이용이 가능합니다.</p>
+                        </div>
+                    </div>
+
+                    <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">건설회사명</label>
+                                <input type="text" id="regCompany" required placeholder="(주)한국건설" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">사업자등록번호 (아이디)</label>
+                                <input type="text" id="regBizNo" required placeholder="000-00-00000" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">담당자 성명</label>
+                                <input type="text" id="regManager" required placeholder="홍길동" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">담당자 연락처</label>
+                                <input type="text" id="regPhone" required placeholder="010-0000-0000" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">비밀번호</label>
+                                <input type="password" id="regPw" required placeholder="비밀번호" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">담당 현장코드</label>
+                                <input type="text" id="regSiteCode" required placeholder="예: SITE-001" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">현장 주소</label>
+                            <input type="text" id="regSiteAddr" placeholder="서울특별시 강남구 테헤란로 123" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-sm mt-2 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
+                            <span>가입 신청하기 (승인 대기)</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 2. DASHBOARD VIEW (로그인 성공 후 표시) -->
+        <section id="dashboardView" class="hidden space-y-6">
+
+            <!-- Top Welcome Banner & Site Information Bar -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center space-x-3">
+                            <span id="userRoleBadge" class="bg-slate-900 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full">관제자</span>
+                            <h1 id="welcomeUserText" class="text-2xl font-black text-slate-900">OO건설 현장안전관리</h1>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1" id="userSubInfo">아이디: admin | 담당자: 관제센터</p>
+                    </div>
+
+                    <!-- Manager Action Switch Tab -->
+                    <div id="managerTabNav" class="hidden flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl">
+                        <button id="btnTabDashboard" onclick="switchManagerTab('dashboard')" class="px-4 py-2 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow-sm">
+                            <i class="fa-solid fa-chart-line mr-1"></i> 현장관제 모니터링
+                        </button>
+                        <button id="btnTabMembers" onclick="switchManagerTab('members')" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 relative">
+                            <i class="fa-solid fa-users-gear mr-1"></i> 건설회사 회원 관리
+                            <span id="pendingBadgeCount" class="hidden ml-1.5 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Site Detailed Information Panel (공사금액, 기간, 현장대리인, 주소 등) -->
+                <div id="siteDetailPanel" class="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <div>
+                        <span class="text-slate-400 block font-medium mb-0.5">현장코드</span>
+                        <span id="infoSiteCode" class="font-bold text-slate-800">SITE-001</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium mb-0.5">공사금액</span>
+                        <span id="infoBudget" class="font-bold text-slate-800">450억 원</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium mb-0.5">공사기간</span>
+                        <span id="infoPeriod" class="font-bold text-slate-800">2025.01 - 2026.12</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium mb-0.5">현장 대리인</span>
+                        <span id="infoManager" class="font-bold text-slate-800">홍길동 차장</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium mb-0.5">연락처</span>
+                        <span id="infoPhone" class="font-bold text-slate-800">010-1234-5678</span>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1 lg:col-span-1">
+                        <span class="text-slate-400 block font-medium mb-0.5">현장주소</span>
+                        <span id="infoAddress" class="font-bold text-slate-800 truncate block" title="서울특별시 강남구 테헤란로 123">서울특별시 강남구 테헤란로 123</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- TAB 1: DASHBOARD MONITORING VIEW -->
+            <div id="tabContentDashboard" class="space-y-6">
+
+                <!-- Disaster Alerts Bar & Publisher -->
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="animate-pulse flex h-3 w-3 rounded-full bg-red-600"></span>
+                            <h2 class="text-base font-extrabold text-slate-900 flex items-center">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2"></i>
+                                실시간 재해 발생 경보 및 안전 주의보
+                            </h2>
+                        </div>
+                        <!-- Manage Alert Trigger for Manager -->
+                        <button id="btnPublishAlert" onclick="openAlertModal()" class="hidden bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>재해 경보 발령</span>
+                        </button>
+                    </div>
+
+                    <!-- Alert Cards Container -->
+                    <div id="alertsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Dynamic Alert Items Inserted Here -->
+                    </div>
+                </div>
+
+                <!-- Main Grid: Legal Docs, Messaging, Consultant Box -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Left 2 Columns: Legal Safety Docs & Communication Board -->
+                    <div class="lg:col-span-2 space-y-6">
+
+                        <!-- Legal Safety Documents (법정 서류 관리) -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                        <i class="fa-solid fa-file-contract text-amber-500 mr-2"></i>
+                                        현장 법정 필수 안전 서류
+                                    </h3>
+                                    <p class="text-xs text-slate-500">안전보건관리계획서, 위험성평가서, 안전교육일지 등</p>
+                                </div>
+                                <button onclick="openDocUploadModal()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
+                                    <i class="fa-solid fa-upload mr-1"></i> 서류 업로드
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-slate-500 text-xs border-y border-slate-200">
+                                            <th class="py-2.5 px-3">서류 구분</th>
+                                            <th class="py-2.5 px-3">파일명</th>
+                                            <th class="py-2.5 px-3">등록일</th>
+                                            <th class="py-2.5 px-3">상태</th>
+                                            <th class="py-2.5 px-3 text-right">관리</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="docsTableBody" class="text-xs divide-y divide-slate-100">
+                                        <!-- Dynamic Docs Rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Site Safety Communication Board (현장 안전 소통 게시판) -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                        <i class="fa-solid fa-comments text-amber-500 mr-2"></i>
+                                        현장 위험요소 및 안전 소통 게시판
+                                    </h3>
+                                    <p class="text-xs text-slate-500">작업자 및 현장관리자의 실시간 위험제보</p>
+                                </div>
+                                <button onclick="openPostModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-3 py-2 rounded-xl transition">
+                                    <i class="fa-solid fa-pen mr-1"></i> 글쓰기
+                                </button>
+                            </div>
+
+                            <div id="postsContainer" class="space-y-3">
+                                <!-- Dynamic Posts -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Direct Messaging & Safety Consultant Card -->
+                    <div class="space-y-6">
+
+                        <!-- Safety Consultant Popup Box (safelynest@naver.com) -->
+                        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-md border border-slate-800 space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-xl shadow-lg">
+                                    <i class="fa-solid fa-user-shield"></i>
+                                </div>
+                                <div>
+                                    <span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">공식 제휴</span>
+                                    <h3 class="text-lg font-bold">안전 컨설팅 전담 센터</h3>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                중대재해예방, 법정 안전진단, 현장 점검 관련 전문가 1:1 자문을 무료로 연결해드립니다.
+                            </p>
+                            <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700/80 text-xs space-y-1.5">
+                                <div class="flex items-center text-slate-300">
+                                    <i class="fa-solid fa-envelope text-amber-400 w-5"></i>
+                                    <span class="font-bold text-white">safelynest@naver.com</span>
+                                </div>
+                                <div class="flex items-center text-slate-300">
+                                    <i class="fa-solid fa-phone text-amber-400 w-5"></i>
+                                    <span>02-555-9080 (직통)</span>
+                                </div>
+                            </div>
+                            <button onclick="openConsultantModal()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition shadow">
+                                <i class="fa-solid fa-paper-plane mr-1"></i> 컨설팅 문의 메일 보내기
+                            </button>
+                        </div>
+
+                        <!-- Direct Messaging Center (관제자 <-> 건설사 쪽지함) -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                    <i class="fa-solid fa-paper-plane text-amber-500 mr-2"></i>
+                                    1:1 즉시 메시지 송수신
+                                </h3>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold" id="msgCountBadge">0건</span>
+                            </div>
+
+                            <!-- Send Message Inputs -->
+                            <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <div id="msgTargetWrapper">
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">수신 대상 건설사</label>
+                                    <select id="msgRecipientSelect" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-amber-500">
+                                        <!-- Dynamic Options -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <textarea id="msgContentInput" rows="2" placeholder="메시지 내용을 입력하세요..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"></textarea>
+                                </div>
+                                <button onclick="sendDirectMessage()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2 rounded-lg transition">
+                                    메시지 발송
+                                </button>
+                            </div>
+
+                            <!-- Message Feed List -->
+                            <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1" id="messagesListContainer">
+                                <!-- Dynamic Messages -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- TAB 2: MANAGER MEMBER MANAGEMENT VIEW (관제자 전용 회원 관리 창) -->
+            <div id="tabContentMembers" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    
+                    <!-- Header & Search Filter Bar -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 flex items-center">
+                                <i class="fa-solid fa-users-gear text-amber-500 mr-2"></i>
+                                가입 신청 건설회사 회원 관리
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">신규 가입 신청 승인, 승인 취소/거절 및 회원 정보를 관리합니다.</p>
+                        </div>
+
+                        <!-- Search Bar & Filter Buttons -->
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                                <input type="text" id="memberSearchInput" onkeyup="renderMembersTable()" placeholder="회사명 또는 담당자 검색..." class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 w-48 sm:w-64">
+                            </div>
+                            <select id="memberStatusFilter" onchange="renderMembersTable()" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <option value="ALL">전체 상태</option>
+                                <option value="PENDING">승인대기</option>
+                                <option value="APPROVED">승인완료</option>
+                                <option value="REJECTED">거절/취소</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Members Table List -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 text-xs font-bold border-y border-slate-200">
+                                    <th class="py-3 px-4">회사명(건설사)</th>
+                                    <th class="py-3 px-4">사업자번호 (ID)</th>
+                                    <th class="py-3 px-4">담당자 성명</th>
+                                    <th class="py-3 px-4">연락처</th>
+                                    <th class="py-3 px-4">담당 현장코드</th>
+                                    <th class="py-3 px-4">가입 신청일</th>
+                                    <th class="py-3 px-4">현재 상태</th>
+                                    <th class="py-3 px-4 text-center">승인/거절 관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody" class="text-xs divide-y divide-slate-100">
+                                <!-- Dynamic Members Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs border-t border-slate-800 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-helmet-safety text-amber-500 text-base"></i>
+                <span class="font-bold text-white">나의안전 Smart Safety Platform</span>
+                <span>© 2026 All rights reserved.</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="hover:text-white cursor-pointer" onclick="openConsultantModal()">컨설팅 문의 (safelynest@naver.com)</span>
+                <span>|</span>
+                <span>고객센터 1588-0000</span>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- MODALS SECTION -->
+
+    <!-- 1. Alert Modal (관제자 재해 경보 발령) -->
+    <div id="modalAlert" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center">
+                    <i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>
+                    재해 발생 경보 발령
+                </h3>
+                <button onclick="closeModal('modalAlert')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">경보 수준</label>
+                    <select id="alertLevelInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                        <option value="CRITICAL">위험 / 긴급 경보 (Red)</option>
+                        <option value="WARNING">주의 / 안전 경보 (Yellow)</option>
+                        <option value="INFO">일반 현장 공지 (Blue)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">경보 제목</label>
+                    <input type="text" id="alertTitleInput" placeholder="예: 타워크레인 강풍 작업중단 발령" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">상세 내용 및 조치사항</label>
+                    <textarea id="alertContentInput" rows="3" placeholder="상세 안전지침 및 피신 조치내용" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('modalAlert')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold">취소</button>
+                <button onclick="submitAlert()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold">경보 전파 발령</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Legal Doc Upload Modal -->
+    <div id="modalDoc" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center">
+                    <i class="fa-solid fa-file-arrow-up text-amber-500 mr-2"></i>
+                    법정 안전 서류 등록
+                </h3>
+                <button onclick="closeModal('modalDoc')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">서류 구분</label>
+                    <select id="docCategoryInput" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                        <option value="안전보건관리계획서">안전보건관리계획서</option>
+                        <option value="위험성평가서">위험성평가서</option>
+                        <option value="정기안전교육일지">정기안전교육일지</option>
+                        <option value="장비점검체크리스트">장비점검체크리스트</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">서류 제목(파일명)</label>
+                    <input type="text" id="docNameInput" placeholder="예: 2026년 1분기 위험성평가서.pdf" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('modalDoc')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold">취소</button>
+                <button onclick="submitDocUpload()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold">등록 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Board Post Modal -->
+    <div id="modalPost" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center">
+                    <i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i>
+                    위험 제보 및 소통 글 작성
+                </h3>
+                <button onclick="closeModal('modalPost')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">제목</label>
+                    <input type="text" id="postTitleInput" placeholder="예: B동 3층開口部 안전난간 미설치 제보" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">내용</label>
+                    <textarea id="postContentInput" rows="3" placeholder="현장 위치 및 조치요청 상세내용" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('modalPost')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold">취소</button>
+                <button onclick="submitPost()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold">게시하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Consultant Email Modal (safelynest@naver.com) -->
+    <div id="modalConsultant" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center">
+                    <i class="fa-solid fa-user-shield text-amber-500 mr-2"></i>
+                    안전 컨설팅 문의 메일
+                </h3>
+                <button onclick="closeModal('modalConsultant')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center space-x-2">
+                <i class="fa-solid fa-envelope-circle-check text-base text-amber-600"></i>
+                <span>수신자: <strong>safelynest@naver.com</strong></span>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">문의 건설사 / 성명</label>
+                    <input type="text" id="consultantSenderInput" placeholder="회사명 및 담당자 성명" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">연락처</label>
+                    <input type="text" id="consultantPhoneInput" placeholder="010-0000-0000" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">자문 요청 사항</label>
+                    <textarea id="consultantBodyInput" rows="3" placeholder="중대재해예방, 안전진단 자문 등 문의 내용을 적어주세요." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal('modalConsultant')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold">취소</button>
+                <button onclick="sendConsultantEmail()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold">이메일 전송</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /*************************************************************
+         * GLOBAL STATE & INITIAL DATA
+         *************************************************************/
+        
+        // 1. Members List (승인 대기 / 승인 완료 / 거절 관리)
+        let membersList = [
+            {
+                bizNo: 'admin',
+                company: '나의안전 관제센터',
+                manager: '관제자',
+                phone: '02-1588-0000',
+                siteCode: 'ALL-SITES',
+                siteAddr: '관제 중앙 센터',
+                regDate: '2026-01-01',
+                status: 'APPROVED', // APPROVED, PENDING, REJECTED
+                role: 'MANAGER',
+                pw: 'admin123',
+                budget: '통합관제',
+                period: '상시'
+            },
+            {
+                bizNo: '101-88-00123',
+                company: '(주)한신건설',
+                manager: '김철수',
+                phone: '010-2233-4455',
+                siteCode: 'SITE-001',
+                siteAddr: '서울특별시 강남구 테헤란로 123',
+                regDate: '2026-02-10',
+                status: 'APPROVED',
+                role: 'MEMBER',
+                pw: '1234',
+                budget: '450억 원',
+                period: '2025.01 - 2026.12'
+            },
+            {
+                bizNo: '202-77-99887',
+                company: '(주)미래이엔씨',
+                manager: '박영희',
+                phone: '010-9988-7766',
+                siteCode: 'SITE-002',
+                siteAddr: '경기도 성남시 분당구 판교역로 45',
+                regDate: '2026-03-01',
+                status: 'PENDING', // 승인 대기 중
+                role: 'MEMBER',
+                pw: '1234',
+                budget: '280억 원',
+                period: '2025.06 - 2027.05'
+            }
+        ];
+
+        // Currently Logged In User Session
+        let currentUser = null; 
+
+        // Current Active Manager View Tab
+        let activeManagerTab = 'dashboard';
+
+        // 2. Disaster Alerts Data
+        let alertsList = [
+            {
+                id: 1,
+                level: 'CRITICAL',
+                title: '타워크레인 강풍 조업 중단 알림',
+                content: '순간풍속 15m/s 초과 감지. B구역 타워크레인 가동을 즉시 중단하고 풍속 저하 시까지 대기바랍니다.',
+                date: '2026-03-20 10:15',
+                publisher: '관제센터'
+            },
+            {
+                id: 2,
+                level: 'WARNING',
+                title: '해빙기 개구부 및 슬라브 추락 주의보',
+                content: '기온 상승에 따른 지반 약화 우려. 개구부 안전덮개 고정상태 및 안전대 착용 필수 점검.',
+                date: '2026-03-19 14:00',
+                publisher: '관제센터'
+            }
+        ];
+
+        // 3. Legal Documents Data
+        let docsList = [
+            { id: 1, category: '안전보건관리계획서', name: '2026년도_상반기_안전보건관리계획서_최종.pdf', date: '2026-01-15', status: '승인완료', siteCode: 'SITE-001' },
+            { id: 2, category: '위험성평가서', name: '3월_정기_위험성평가_실시결과보고.pdf', date: '2026-03-02', status: '검토 완료', siteCode: 'SITE-001' },
+            { id: 3, category: '정기안전교육일지', name: '2026-03-15_특별안전보건교육일지.pdf', date: '2026-03-15', status: '보관중', siteCode: 'SITE-002' }
+        ];
+
+        // 4. Communication Posts Data
+        let postsList = [
+            {
+                id: 1,
+                title: 'A동 2층 난간대 일부 이격 발생 제보',
+                content: 'A동 2층 외부 작업발판 연결부 난간 고정이 느슨합니다. 즉시 보강 조치 부탁드립니다.',
+                author: '김철수 (한신건설)',
+                date: '2026-03-20 11:30',
+                siteCode: 'SITE-001'
+            }
+        ];
+
+        // 5. Direct Messages Data
+        let messagesList = [
+            {
+                id: 1,
+                from: '관제센터',
+                to: '101-88-00123',
+                toName: '(주)한신건설',
+                content: '안전교육일지 누락 건 제출 바랍니다.',
+                date: '2026-03-18 09:00'
+            }
+        ];
+
+
+        /*************************************************************
+         * INITIALIZATION & UI ROUTING
+         *************************************************************/
+        window.onload = function() {
+            renderHeaderNav();
+            updatePendingBadge();
+        };
+
+        function goHome() {
+            if (!currentUser) {
+                document.getElementById('landingView').classList.remove('hidden');
+                document.getElementById('dashboardView').classList.add('hidden');
+            } else {
+                document.getElementById('landingView').classList.add('hidden');
+                document.getElementById('dashboardView').classList.remove('hidden');
+            }
+        }
+
+        function renderHeaderNav() {
+            const nav = document.getElementById('headerAuthNav');
+            if (!currentUser) {
+                nav.innerHTML = `
+                    <span class="text-xs text-slate-400 font-medium">로그인이 필요합니다</span>
+                `;
+            } else {
+                nav.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right text-xs">
+                            <span class="font-bold text-white block">${currentUser.company}</span>
+                            <span class="text-amber-400 font-semibold">${currentUser.role === 'MANAGER' ? '통합 관제자' : currentUser.manager + ' 담당자'}</span>
+                        </div>
+                        <button onclick="handleLogout()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition border border-slate-700">
+                            <i class="fa-solid fa-right-from-bracket mr-1"></i> 로그아웃
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.innerText = message;
+            if (isError) {
+                toast.classList.remove('border-amber-500');
+                toast.classList.add('border-red-500');
+                iconEl.className = 'fa-solid fa-circle-exclamation text-red-500 text-xl';
+            } else {
+                toast.classList.remove('border-red-500');
+                toast.classList.add('border-amber-500');
+                iconEl.className = 'fa-solid fa-circle-check text-amber-400 text-xl';
+            }
+
+            toast.classList.remove('translate-y-[-150%]');
+            toast.classList.add('translate-y-0');
+
+            setTimeout(() => {
+                hideToast();
+            }, 3500);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-0');
+            toast.classList.add('translate-y-[-150%]');
+        }
+
+        function updatePendingBadge() {
+            const pendingCount = membersList.filter(m => m.status === 'PENDING').length;
+            const badge = document.getElementById('pendingBadgeCount');
+            if (pendingCount > 0) {
+                badge.innerText = pendingCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+
+        /*************************************************************
+         * 1. SIGNUP & LOGIN WORKFLOW LOGIC
+         *************************************************************/
+
+        // Handle Signup (건설회사 회원가입 신청 -> 승인 대기)
+        function handleSignup(e) {
+            e.preventDefault();
+            const company = document.getElementById('regCompany').value.trim();
+            const bizNo = document.getElementById('regBizNo').value.trim();
+            const manager = document.getElementById('regManager').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const pw = document.getElementById('regPw').value.trim();
+            const siteCode = document.getElementById('regSiteCode').value.trim();
+            const siteAddr = document.getElementById('regSiteAddr').value.trim() || '주소 미입력';
+
+            // Check duplicate bizNo
+            const existing = membersList.find(m => m.bizNo === bizNo);
+            if (existing) {
+                showToast('이미 가입 신청되었거나 등록된 사업자번호입니다.', true);
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const newMember = {
+                bizNo: bizNo,
+                company: company,
+                manager: manager,
+                phone: phone,
+                siteCode: siteCode,
+                siteAddr: siteAddr,
+                regDate: today,
+                status: 'PENDING', // default pending approval
+                role: 'MEMBER',
+                pw: pw,
+                budget: '협의중',
+                period: '공사 예정'
+            };
+
+            membersList.push(newMember);
+            document.getElementById('signupForm').reset();
+
+            updatePendingBadge();
+
+            // Custom Message requirement
+            showToast('가입 신청이 완료되었습니다. 나의안전 관제자 승인 후 접속 가능합니다.');
+        }
+
+        // Handle Login
+        function handleLogin(e) {
+            e.preventDefault();
+            const idInput = document.getElementById('loginId').value.trim();
+            const pwInput = document.getElementById('loginPw').value.trim();
+
+            const user = membersList.find(m => m.bizNo === idInput && m.pw === pwInput);
+
+            if (!user) {
+                showToast('아이디 또는 비밀번호가 일치하지 않습니다.', true);
+                return;
+            }
+
+            // CHECK PENDING APPROVAL WORKFLOW
+            if (user.status === 'PENDING') {
+                showToast('승인 대기 중입니다. 나의안전 관제자 승인 후 접속 가능합니다.', true);
+                return;
+            }
+
+            if (user.status === 'REJECTED') {
+                showToast('회원가입 승인이 거부되었거나 이용이 정지된 계정입니다.', true);
+                return;
+            }
+
+            // SUCCESSFUL LOGIN
+            currentUser = user;
+            showToast(`${user.company} (${user.manager}) 님 환영합니다.`);
+            
+            document.getElementById('loginForm').reset();
+            renderHeaderNav();
+            renderDashboard();
+
+            document.getElementById('landingView').classList.add('hidden');
+            document.getElementById('dashboardView').classList.remove('hidden');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            renderHeaderNav();
+            showToast('성공적으로 로그아웃 되었습니다.');
+            goHome();
+        }
+
+
+        /*************************************************************
+         * 2. DASHBOARD & MANAGER TAB SWITCHING
+         *************************************************************/
+        function renderDashboard() {
+            if (!currentUser) return;
+
+            // Render Site Information Panel
+            document.getElementById('welcomeUserText').innerText = `${currentUser.company} 현장안전관제`;
+            document.getElementById('userSubInfo').innerText = `사업자번호: ${currentUser.bizNo} | 담당자: ${currentUser.manager} | 연락처: ${currentUser.phone}`;
+            document.getElementById('infoSiteCode').innerText = currentUser.siteCode;
+            document.getElementById('infoBudget').innerText = currentUser.budget || '450억 원';
+            document.getElementById('infoPeriod').innerText = currentUser.period || '2025.01 - 2026.12';
+            document.getElementById('infoManager').innerText = `${currentUser.manager}`;
+            document.getElementById('infoPhone').innerText = currentUser.phone;
+            document.getElementById('infoAddress').innerText = currentUser.siteAddr;
+            document.getElementById('infoAddress').title = currentUser.siteAddr;
+
+            const roleBadge = document.getElementById('userRoleBadge');
+            const managerNav = document.getElementById('managerTabNav');
+            const btnPublishAlert = document.getElementById('btnPublishAlert');
+
+            if (currentUser.role === 'MANAGER') {
+                roleBadge.innerText = '통합관제자';
+                roleBadge.className = 'bg-amber-500 text-slate-950 text-xs font-bold px-2.5 py-1 rounded-full';
+                managerNav.classList.remove('hidden');
+                btnPublishAlert.classList.remove('hidden');
+            } else {
+                roleBadge.innerText = '건설사 회원';
+                roleBadge.className = 'bg-slate-900 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full';
+                managerNav.classList.add('hidden');
+                btnPublishAlert.classList.add('hidden');
+            }
+
+            // Default active tab reset
+            switchManagerTab('dashboard');
+
+            // Render Content Elements
+            renderAlerts();
+            renderDocsTable();
+            renderPosts();
+            renderMessages();
+            setupRecipientSelect();
+        }
+
+        function switchManagerTab(tab) {
+            activeManagerTab = tab;
+            const btnDash = document.getElementById('btnTabDashboard');
+            const btnMem = document.getElementById('btnTabMembers');
+            const contentDash = document.getElementById('tabContentDashboard');
+            const contentMem = document.getElementById('tabContentMembers');
+
+            if (tab === 'dashboard') {
+                btnDash.className = 'px-4 py-2 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow-sm';
+                btnMem.className = 'px-4 py-2 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 relative';
+                contentDash.classList.remove('hidden');
+                contentMem.classList.add('hidden');
+            } else {
+                btnMem.className = 'px-4 py-2 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow-sm relative';
+                btnDash.className = 'px-4 py-2 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900';
+                contentMem.classList.remove('hidden');
+                contentDash.classList.add('hidden');
+                renderMembersTable();
+            }
+        }
+
+
+        /*************************************************************
+         * 3. MANAGER MEMBER MANAGEMENT TAB LOGIC (회원 관리 창)
+         *************************************************************/
+        function renderMembersTable() {
+            const tbody = document.getElementById('membersTableBody');
+            const searchQuery = document.getElementById('memberSearchInput').value.toLowerCase();
+            const filterStatus = document.getElementById('memberStatusFilter').value;
+
+            // Filter out admin
+            let filtered = membersList.filter(m => m.role !== 'MANAGER');
+
+            if (filterStatus !== 'ALL') {
+                filtered = filtered.filter(m => m.status === filterStatus);
+            }
+
+            if (searchQuery) {
+                filtered = filtered.filter(m => 
+                    m.company.toLowerCase().includes(searchQuery) ||
+                    m.manager.toLowerCase().includes(searchQuery) ||
+                    m.bizNo.includes(searchQuery)
+                );
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-slate-400">
+                            <i class="fa-solid fa-users-slash text-2xl mb-2 block"></i>
+                            등록된 회원 내역이 없거나 조건에 일치하는 회원이 없습니다.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(m => {
+                let statusBadge = '';
+                if (m.status === 'PENDING') {
+                    statusBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-2.5 py-0.5 rounded-full text-[11px] animate-pulse">승인대기</span>`;
+                } else if (m.status === 'APPROVED') {
+                    statusBadge = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2.5 py-0.5 rounded-full text-[11px]">승인완료</span>`;
+                } else {
+                    statusBadge = `<span class="bg-red-100 text-red-800 border border-red-300 font-bold px-2.5 py-0.5 rounded-full text-[11px]">거절/취소</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-4 font-bold text-slate-900">${m.company}</td>
+                        <td class="py-3 px-4 font-mono text-slate-600">${m.bizNo}</td>
+                        <td class="py-3 px-4 font-medium text-slate-800">${m.manager}</td>
+                        <td class="py-3 px-4 text-slate-600">${m.phone}</td>
+                        <td class="py-3 px-4 text-slate-600"><span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-mono">${m.siteCode}</span></td>
+                        <td class="py-3 px-4 text-slate-500">${m.regDate}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center space-x-1">
+                                ${m.status !== 'APPROVED' ? `
+                                    <button onclick="changeMemberStatus('${m.bizNo}', 'APPROVED')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded text-[11px] transition shadow-sm">
+                                        <i class="fa-solid fa-check mr-0.5"></i> 승인
+                                    </button>
+                                ` : ''}
+
+                                ${m.status !== 'REJECTED' ? `
+                                    <button onclick="changeMemberStatus('${m.bizNo}', 'REJECTED')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-2.5 py-1 rounded text-[11px] transition shadow-sm">
+                                        <i class="fa-solid fa-ban mr-0.5"></i> ${m.status === 'APPROVED' ? '승인취소' : '거절'}
+                                    </button>
+                                ` : ''}
+
+                                <button onclick="deleteMember('${m.bizNo}')" class="bg-slate-200 hover:bg-red-600 hover:text-white text-slate-700 font-bold px-2 py-1 rounded text-[11px] transition">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 관제자의 회원 상태 변경 (승인 / 거절 / 승인취소)
+        function changeMemberStatus(bizNo, newStatus) {
+            const member = membersList.find(m => m.bizNo === bizNo);
+            if (!member) return;
+
+            member.status = newStatus;
+            updatePendingBadge();
+            renderMembersTable();
+
+            if (newStatus === 'APPROVED') {
+                showToast(`[${member.company}] 가입이 승인되었습니다. 이제 해당 회원으로 로그인 가능합니다.`);
+            } else {
+                showToast(`[${member.company}] 가입 상태가 거절/승인취소 처리되었습니다.`);
+            }
+        }
+
+        // 관제자의 회원 삭제
+        function deleteMember(bizNo) {
+            const member = membersList.find(m => m.bizNo === bizNo);
+            if (!member) return;
+
+            if (!confirm(`[${member.company}] 회원 정보를 정말 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            membersList = membersList.filter(m => m.bizNo !== bizNo);
+            updatePendingBadge();
+            renderMembersTable();
+            showToast(`[${member.company}] 회원이 삭제되었습니다.`);
+        }
+
+
+        /*************************************************************
+         * 4. DISASTER ALERTS MANAGEMENT
+         *************************************************************/
+        function renderAlerts() {
+            const container = document.getElementById('alertsContainer');
+            if (alertsList.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-4 text-xs text-slate-500">발령된 재해 경보가 없습니다.</div>`;
+                return;
+            }
+
+            container.innerHTML = alertsList.map(item => {
+                let colorClasses = 'bg-red-100 border-red-300 text-red-900';
+                let badgeText = '위험';
+                if (item.level === 'WARNING') {
+                    colorClasses = 'bg-amber-100 border-amber-300 text-amber-900';
+                    badgeText = '주의';
+                } else if (item.level === 'INFO') {
+                    colorClasses = 'bg-blue-100 border-blue-300 text-blue-900';
+                    badgeText = '공지';
+                }
+
+                return `
+                    <div class="p-3.5 rounded-xl border ${colorClasses} relative space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-black text-xs px-2 py-0.5 rounded-full bg-white/80 shadow-sm">${badgeText}</span>
+                            <span class="text-[11px] text-slate-500">${item.date}</span>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-900 pt-1">${item.title}</h4>
+                        <p class="text-xs text-slate-700 leading-relaxed">${item.content}</p>
+                        ${currentUser.role === 'MANAGER' ? `
+                            <button onclick="deleteAlert(${item.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-600 p-1">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openAlertModal() {
+            document.getElementById('modalAlert').classList.remove('hidden');
+        }
+
+        function submitAlert() {
+            const level = document.getElementById('alertLevelInput').value;
+            const title = document.getElementById('alertTitleInput').value.trim();
+            const content = document.getElementById('alertContentInput').value.trim();
+
+            if (!title || !content) {
+                showToast('제목과 내용을 모두 입력해 주세요.', true);
+                return;
+            }
+
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 5);
+
+            alertsList.unshift({
+                id: Date.now(),
+                level: level,
+                title: title,
+                content: content,
+                date: dateStr,
+                publisher: currentUser.company
+            });
+
+            document.getElementById('alertTitleInput').value = '';
+            document.getElementById('alertContentInput').value = '';
+            closeModal('modalAlert');
+            renderAlerts();
+            showToast('전 현장에 실시간 재해 경보가 발령되었습니다.');
+        }
+
+        function deleteAlert(id) {
+            alertsList = alertsList.filter(a => a.id !== id);
+            renderAlerts();
+            showToast('경보 항목이 삭제되었습니다.');
+        }
+
+
+        /*************************************************************
+         * 5. LEGAL DOCUMENTS MANAGEMENT
+         *************************************************************/
+        function renderDocsTable() {
+            const tbody = document.getElementById('docsTableBody');
+            
+            // Member only sees their site code or manager sees all
+            let filteredDocs = docsList;
+            if (currentUser.role !== 'MANAGER') {
+                filteredDocs = docsList.filter(d => d.siteCode === currentUser.siteCode || d.siteCode === 'ALL-SITES');
+            }
+
+            if (filteredDocs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">등록된 서류가 없습니다.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredDocs.map(doc => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-3 font-semibold text-slate-800">${doc.category}</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-900 flex items-center space-x-1">
+                        <i class="fa-regular fa-file-pdf text-red-500 mr-1"></i>
+                        <span>${doc.name}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-slate-500">${doc.date}</td>
+                    <td class="py-2.5 px-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-bold">${doc.status}</span></td>
+                    <td class="py-2.5 px-3 text-right">
+                        <button onclick="downloadDoc('${doc.name}')" class="text-slate-600 hover:text-amber-600 mr-2" title="다운로드"><i class="fa-solid fa-download"></i></button>
+                        <button onclick="deleteDoc(${doc.id})" class="text-slate-400 hover:text-red-600" title="삭제"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openDocUploadModal() {
+            document.getElementById('modalDoc').classList.remove('hidden');
+        }
+
+        function submitDocUpload() {
+            const category = document.getElementById('docCategoryInput').value;
+            const name = document.getElementById('docNameInput').value.trim();
+
+            if (!name) {
+                showToast('서류 제목 또는 파일명을 입력해주세요.', true);
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            docsList.unshift({
+                id: Date.now(),
+                category: category,
+                name: name,
+                date: today,
+                status: '검토 중',
+                siteCode: currentUser.siteCode
+            });
+
+            document.getElementById('docNameInput').value = '';
+            closeModal('modalDoc');
+            renderDocsTable();
+            showToast('법정 안전 서류가 정상 업로드되었습니다.');
+        }
+
+        function downloadDoc(docName) {
+            showToast(`[${docName}] 서류 다운로드가 시작되었습니다.`);
+        }
+
+        function deleteDoc(id) {
+            docsList = docsList.filter(d => d.id !== id);
+            renderDocsTable();
+            showToast('서류 항목이 삭제되었습니다.');
+        }
+
+
+        /*************************************************************
+         * 6. POSTS & MESSAGING & CONSULTANT LOGIC
+         *************************************************************/
+
+        // Community Board
+        function renderPosts() {
+            const container = document.getElementById('postsContainer');
+            if (postsList.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">게시물이 없습니다.</p>`;
+                return;
+            }
+
+            container.innerHTML = postsList.map(post => `
+                <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 transition space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-900">${post.title}</span>
+                        <span class="text-[11px] text-slate-400">${post.date}</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">${post.content}</p>
+                    <div class="text-[11px] text-slate-400 pt-1 flex items-center justify-between">
+                        <span>작성자: ${post.author}</span>
+                        <span class="bg-white px-2 py-0.5 rounded border border-slate-200 font-mono">${post.siteCode}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openPostModal() {
+            document.getElementById('modalPost').classList.remove('hidden');
+        }
+
+        function submitPost() {
+            const title = document.getElementById('postTitleInput').value.trim();
+            const content = document.getElementById('postContentInput').value.trim();
+
+            if (!title || !content) {
+                showToast('제목과 내용을 모두 입력해 주세요.', true);
+                return;
+            }
+
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 5);
+
+            postsList.unshift({
+                id: Date.now(),
+                title: title,
+                content: content,
+                author: `${currentUser.manager} (${currentUser.company})`,
+                date: dateStr,
+                siteCode: currentUser.siteCode
+            });
+
+            document.getElementById('postTitleInput').value = '';
+            document.getElementById('postContentInput').value = '';
+            closeModal('modalPost');
+            renderPosts();
+            showToast('안전 소통 게시글이 등록되었습니다.');
+        }
+
+        // Direct Messaging Center
+        function setupRecipientSelect() {
+            const select = document.getElementById('msgRecipientSelect');
+            if (currentUser.role === 'MANAGER') {
+                const approvedMembers = membersList.filter(m => m.role !== 'MANAGER' && m.status === 'APPROVED');
+                select.innerHTML = approvedMembers.map(m => `<option value="${m.bizNo}">${m.company} (${m.manager})</option>`).join('');
+                document.getElementById('msgTargetWrapper').classList.remove('hidden');
+            } else {
+                select.innerHTML = `<option value="admin">나의안전 관제센터</option>`;
+                document.getElementById('msgTargetWrapper').classList.add('hidden');
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messagesListContainer');
+            let myMessages = [];
+
+            if (currentUser.role === 'MANAGER') {
+                myMessages = messagesList;
+            } else {
+                myMessages = messagesList.filter(m => m.to === currentUser.bizNo || m.from === currentUser.company);
+            }
+
+            document.getElementById('msgCountBadge').innerText = `${myMessages.length}건`;
+
+            if (myMessages.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">수신/발신된 쪽지가 없습니다.</p>`;
+                return;
+            }
+
+            container.innerHTML = myMessages.map(msg => `
+                <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1">
+                    <div class="flex items-center justify-between text-[11px] text-slate-500">
+                        <span class="font-bold text-slate-700">${msg.from} → ${msg.toName}</span>
+                        <span>${msg.date}</span>
+                    </div>
+                    <p class="text-slate-800">${msg.content}</p>
+                </div>
+            `).join('');
+        }
+
+        function sendDirectMessage() {
+            const select = document.getElementById('msgRecipientSelect');
+            const content = document.getElementById('msgContentInput').value.trim();
+
+            if (!content) {
+                showToast('메시지 내용을 입력해주세요.', true);
+                return;
+            }
+
+            let toId = select.value;
+            let toName = '관제센터';
+
+            if (currentUser.role === 'MANAGER') {
+                const target = membersList.find(m => m.bizNo === toId);
+                toName = target ? target.company : '건설사';
+            }
+
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 5);
+
+            messagesList.unshift({
+                id: Date.now(),
+                from: currentUser.company,
+                to: toId,
+                toName: toName,
+                content: content,
+                date: dateStr
+            });
+
+            document.getElementById('msgContentInput').value = '';
+            renderMessages();
+            showToast('쪽지가 성공적으로 발송되었습니다.');
+        }
+
+        // Safety Consultant Modal logic (safelynest@naver.com)
+        function openConsultantModal() {
+            if (currentUser) {
+                document.getElementById('consultantSenderInput').value = `${currentUser.company} (${currentUser.manager})`;
+                document.getElementById('consultantPhoneInput').value = currentUser.phone;
+            }
+            document.getElementById('modalConsultant').classList.remove('hidden');
+        }
+
+        function sendConsultantEmail() {
+            const sender = document.getElementById('consultantSenderInput').value.trim();
+            const phone = document.getElementById('consultantPhoneInput').value.trim();
+            const body = document.getElementById('consultantBodyInput').value.trim();
+
+            if (!sender || !body) {
+                showToast('문의자 성명과 자문 내용을 입력해 주세요.', true);
+                return;
+            }
+
+            closeModal('modalConsultant');
+            showToast('safelynest@naver.com 메일 전송이 접수되었습니다. 담당 전문가가 곧 연락드립니다.');
+            document.getElementById('consultantBodyInput').value = '';
+        }
+
+        // Modal Utility
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
