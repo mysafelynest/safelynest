@@ -253,4 +253,485 @@
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                             <div>
                                 <h2 class="text-xl font-bold text-slate-900">[관리자 권한] 전사 현장 통합 데이터 관리</h2>
-                                <p class="text-xs text-slate-500 mt-1">모든 회원사의 현장 정보, 일일 점검표, 교육자료 및 위험성평가를
+                                <p class="text-xs text-slate-500 mt-1">모든 회원사의 현장 정보, 일일 점검표, 교육자료 및 위험성평가를 통합 확인·편집합니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                            <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center">
+                                <i class="fa-solid fa-building-circle-check text-mysafety-500 mr-2"></i> 전체 가입 건설회사 현장 목록 및 관리
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-500 font-semibold border-b">
+                                        <tr>
+                                            <th class="p-3">건설회사명</th>
+                                            <th class="p-3">현장명</th>
+                                            <th class="p-3 text-center">일일진행표</th>
+                                            <th class="p-3 text-center">교육자료</th>
+                                            <th class="p-3 text-center">위험성평가</th>
+                                            <th class="p-3 text-center">데이터 편집</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-all-sites-tbody" class="divide-y text-slate-700">
+                                        <!-- Dynamic Admin Site Rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </main>
+
+                    <!-- 1. 건설회사 전용 페이지 (캘린더, 진행사항 확인표, 교육자료, 위험성평가) -->
+                    <main id="dashboard-partner" class="max-w-7xl w-full mx-auto space-y-6 hidden">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4">
+                            <div>
+                                <span class="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold">건설회사 회원 전용</span>
+                                <h2 id="partner-company-title" class="text-xl font-bold text-slate-900 mt-1">(주)한성건설</h2>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    담당 현장: <strong id="partner-site-title">제1공구 철근콘크리트 현장</strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 3대 핵심 안전 관리 카드 (매일 진행사항, 교육자료, 위험성평가) -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-mysafety-500 transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">일일 점검</span>
+                                    <i class="fa-solid fa-list-check text-mysafety-500"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-sm">매일 진행사항 확인표 (TBM)</h3>
+                                <p class="text-[11px] text-slate-500 mt-1">당일 작업내용, 근로자 출석 및 TBM 점검 완료</p>
+                                <button onclick="openSmartDocModal(23)" class="w-full mt-3 py-1.5 bg-mysafety-500 text-white text-xs font-bold rounded-lg hover:bg-mysafety-600 transition">
+                                    오늘 확인표 작성/조회
+                                </button>
+                            </div>
+
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-500 transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">안전 교육</span>
+                                    <i class="fa-solid fa-graduation-cap text-blue-500"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-sm">현장 안전 교육자료 및 서명</h3>
+                                <p class="text-[11px] text-slate-500 mt-1">정기/신규 채용자 교육자료 확인 및 이수 서명</p>
+                                <button onclick="alert('건설회사 맞춤형 교육자료함으로 이동합니다.')" class="w-full mt-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition">
+                                    교육자료 확인하기
+                                </button>
+                            </div>
+
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-amber-500 transition">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">위험성평가</span>
+                                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-sm">공종별 위험성평가 관리</h3>
+                                <p class="text-[11px] text-slate-500 mt-1">유해위험요인 감소대책 수립 및 승인 요청</p>
+                                <button onclick="alert('위험성평가 작성 페이지로 이동합니다.')" class="w-full mt-3 py-1.5 bg-amber-500 text-slate-900 text-xs font-bold rounded-lg hover:bg-amber-600 transition">
+                                    위험성평가 수립/조회
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 캘린더 시스템 -->
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                                <i class="fa-regular fa-calendar-check text-mysafety-500 mr-2"></i> 2026년 10월 안전 관리 캘린더
+                            </h3>
+                            <div class="grid grid-cols-7 gap-px bg-slate-200 rounded-xl overflow-hidden border">
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-red-500">일</div>
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-slate-700">월</div>
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-slate-700">화</div>
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-slate-700">수</div>
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-slate-700">목</div>
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-slate-700">금</div>
+                                <div class="bg-slate-100 p-2 text-center text-xs font-bold text-blue-500">토</div>
+
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-slate-300 text-xs">27</div>
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-slate-300 text-xs">28</div>
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-slate-300 text-xs">29</div>
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-slate-300 text-xs">30</div>
+                                <div onclick="openSmartDocModal(1)" class="bg-white min-h-[75px] p-1.5 hover:bg-emerald-50/50 cursor-pointer transition">
+                                    <span class="text-xs font-semibold">1</span>
+                                    <div class="mt-1 text-[10px] bg-emerald-100 text-emerald-800 px-1 py-0.5 rounded truncate">✓ TBM 완료</div>
+                                </div>
+                                <div onclick="openSmartDocModal(2)" class="bg-white min-h-[75px] p-1.5 hover:bg-emerald-50/50 cursor-pointer transition">
+                                    <span class="text-xs font-semibold">2</span>
+                                    <div class="mt-1 text-[10px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded truncate">✓ 위험성평가</div>
+                                </div>
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-blue-500 text-xs">3</div>
+                                
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-red-500 text-xs">4</div>
+                                <div onclick="openSmartDocModal(22)" class="bg-white min-h-[75px] p-1.5 hover:bg-emerald-50/50 cursor-pointer transition">
+                                    <span class="text-xs font-semibold">22</span>
+                                    <div class="mt-1 text-[10px] bg-emerald-100 text-emerald-800 px-1 py-0.5 rounded truncate">✓ TBM 완료</div>
+                                </div>
+                                <div onclick="openSmartDocModal(23)" class="bg-emerald-50 min-h-[75px] p-1.5 ring-2 ring-mysafety-500 ring-inset cursor-pointer transition">
+                                    <span class="text-xs font-bold text-emerald-900 bg-emerald-200 px-1 rounded">23 (오늘)</span>
+                                    <div class="mt-1 text-[10px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-medium">✏️ 작성/조회</div>
+                                </div>
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-blue-500 text-xs">24</div>
+                                <div class="bg-slate-50 min-h-[75px] p-1.5 text-red-500 text-xs">25</div>
+                                <div class="bg-white min-h-[75px] p-1.5 text-xs">26</div>
+                                <div class="bg-white min-h-[75px] p-1.5 text-xs">27</div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <!-- 회원 관리 창 (관리자 전용) -->
+                    <main id="page-side-users" class="max-w-7xl w-full mx-auto space-y-6 hidden">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                            <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-users-gear text-blue-600 mr-2"></i> 회원가입 승인 및 건설회사 관리</h2>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800 mb-2">⏳ 승인 대기 목록</h3>
+                                <div class="overflow-x-auto border rounded-xl">
+                                    <table class="w-full text-left text-xs">
+                                        <thead class="bg-amber-50 text-amber-900 font-semibold border-b">
+                                            <tr>
+                                                <th class="p-3">건설회사명</th>
+                                                <th class="p-3">담당자</th>
+                                                <th class="p-3">연락처</th>
+                                                <th class="p-3">이메일</th>
+                                                <th class="p-3 text-center">승인</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pending-users-tbody" class="divide-y text-slate-700"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <!-- 3. 복원된 중대재해 알림 페이지 -->
+                    <main id="page-side-alert" class="max-w-7xl w-full mx-auto space-y-6 hidden">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center border-b pb-3">
+                                <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-bullhorn text-rose-500 mr-2"></i> 중대재해 속보 및 법정 경보 알림</h2>
+                                <button onclick="openModal('modal-create-alert')" class="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold">알림 작성</button>
+                            </div>
+                            <div id="alert-list-container" class="space-y-3"></div>
+                        </div>
+                    </main>
+
+                    <!-- 3. 복원된 법정 서류 양식함 페이지 -->
+                    <main id="page-side-docs" class="max-w-7xl w-full mx-auto space-y-6 hidden">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center border-b pb-3">
+                                <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-folder-open text-mysafety-500 mr-2"></i> 법정 서류 표준 양식함</h2>
+                                <button onclick="openModal('modal-upload-doc')" class="px-3 py-1.5 bg-mysafety-500 text-white rounded-lg text-xs font-bold">양식 업로드</button>
+                            </div>
+                            <div id="docs-list-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                        </div>
+                    </main>
+
+                    <!-- 3. 복원된 현장 소통 게시판 페이지 -->
+                    <main id="page-side-board" class="max-w-7xl w-full mx-auto space-y-6 hidden">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center border-b pb-3">
+                                <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-comments text-indigo-500 mr-2"></i> 현장 소통 게시판</h2>
+                                <button onclick="openModal('modal-create-post')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold">게시글 작성</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 border-b">
+                                        <tr>
+                                            <th class="p-3">카테고리</th>
+                                            <th class="p-3">제목</th>
+                                            <th class="p-3">작성자</th>
+                                            <th class="p-3 text-center">날짜</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="board-table-body" class="divide-y"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </main>
+
+                    <!-- 3. 복원된 공지사항 페이지 -->
+                    <main id="page-side-notice" class="max-w-7xl w-full mx-auto space-y-6 hidden">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h2 class="text-lg font-bold text-slate-900 border-b pb-3"><i class="fa-solid fa-bullhorn text-amber-500 mr-2"></i> 전사 안전보건 공지사항</h2>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-slate-50 border rounded-lg text-xs">
+                                    <div class="font-bold text-slate-800">[필독] 2026년 하반기 중대재해 예방 지침 준수 요청</div>
+                                    <p class="text-slate-500 mt-1">모든 현장은 작업 전 TBM 실시 및 고위험 작업 허가 서식 작성을 엄수하시기 바랍니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- 지도사 자문 팝업 모달 -->
+    <div id="modal-consult-popup" class="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 text-xs text-center space-y-4">
+            <h3 class="text-base font-bold text-slate-800">나의안전 지도사 자문 요청</h3>
+            <div class="bg-slate-50 border p-4 rounded-xl text-left space-y-2">
+                <div><strong>이메일:</strong> <a href="mailto:safelynest@naver.com" class="text-mysafety-600 font-bold">safelynest@naver.com</a></div>
+                <div><strong>직통전화:</strong> 02-1234-5678</div>
+            </div>
+            <button onclick="closeModal('modal-consult-popup')" class="w-full py-2 bg-mysafety-500 text-white font-bold rounded-lg">확인</button>
+        </div>
+    </div>
+
+    <!-- 일일 서류/확인표 모달 -->
+    <div id="modal-smart-doc" class="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 text-xs space-y-4">
+            <h3 class="text-base font-bold text-slate-800">매일 진행사항 확인표 및 TBM 작성</h3>
+            <div>
+                <label class="block font-semibold mb-1">공종 선택</label>
+                <input type="text" value="철근 배근 및 거푸집 조립" class="w-full p-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">금일 안전점검 핵심사항</label>
+                <textarea rows="3" class="w-full p-2 border rounded-lg">고소작업대 작업 시 안전대 체결 필수 확인</textarea>
+            </div>
+            <div class="text-right space-x-2">
+                <button onclick="closeModal('modal-smart-doc')" class="px-4 py-2 border rounded-lg">취소</button>
+                <button onclick="alert('확인표가 저장되었습니다.'); closeModal('modal-smart-doc');" class="px-4 py-2 bg-mysafety-500 text-white font-bold rounded-lg">저장 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS ENGINE -->
+    <script>
+        let currentRole = 'manager';
+        let currentUser = null;
+
+        // 회원 DB
+        let userDatabase = [
+            { id: 1, company: "(주)한성건설", name: "김담당", phone: "010-1234-5678", email: "safety@partner.co.kr", pw: "1234", status: "approved", siteName: "제1공구 철근콘크리트 현장" },
+            { id: 2, company: "(주)삼지이엔지", name: "이설비", phone: "010-9876-5432", email: "samji@partner.co.kr", pw: "1234", status: "approved", siteName: "지하배관 설비 현장" }
+        ];
+
+        // 데이터베이스
+        let legalDocs = [
+            { id: 1, cat: '위험성평가', title: '공종별 위험성평가 표준표 (2026 개정)', ext: 'HWP' },
+            { id: 2, cat: 'TBM', title: '작업 전 안전점검 회의(TBM) 서명부', ext: 'EXCEL' }
+        ];
+
+        let disasterAlerts = [
+            { id: 1, title: '[경보] 타워크레인 와이어로프 절단 추락 사고 주의', date: '2026.10.23', content: '양중물 낙하로 인한 중대재해 발생. 점검 필수.' }
+        ];
+
+        let boardPosts = [
+            { id: 1, cat: '안전노하우', title: '타워크레인 지정 무전기 채널 분리 운영 사례 공유', author: '김담당 ((주)한성건설)', date: '2026.10.23' }
+        ];
+
+        // 로그인 제어
+        function handlePartnerLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('partner-email').value.trim();
+            const pw = document.getElementById('partner-pw').value.trim();
+            const user = userDatabase.find(u => u.email === email && u.pw === pw);
+
+            if (!user) { alert('이메일 또는 비밀번호가 올바르지 않습니다.'); return; }
+            if (user.status === 'pending') { alert('승인 대기 중인 회원입니다. 관리자 승인 후 로그인해 주세요.'); return; }
+
+            currentUser = user;
+            switchUserRole('partner');
+            switchView('app');
+        }
+
+        function handleManagerLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value.trim();
+            const pw = document.getElementById('admin-pw').value.trim();
+
+            if (email === "admin@mysafety.co.kr" && pw === "admin1234") {
+                currentUser = { name: "총괄 관제자", company: "나의안전" };
+                switchUserRole('manager');
+                switchView('app');
+            } else {
+                alert('관리자 계정 정보가 일치하지 않습니다.');
+            }
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const company = document.getElementById('signup-company').value;
+            const name = document.getElementById('signup-name').value;
+            const phone = document.getElementById('signup-phone').value;
+            const email = document.getElementById('signup-email').value;
+            const pw = document.getElementById('signup-pw').value;
+
+            userDatabase.push({ id: Date.now(), company, name, phone, email, pw, status: 'pending', siteName: '신규 신청 현장' });
+            alert(`[${company}] 회원가입 신청이 제출되었습니다. 관리자 승인 후 로그인할 수 있습니다.`);
+            e.target.reset();
+            toggleAuthMode('partner-login');
+        }
+
+        // 권한별 화면 조율
+        function switchUserRole(role) {
+            currentRole = role;
+            const sideUsersMenu = document.getElementById('side-menu-users');
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userAvatar = document.getElementById('user-avatar');
+
+            if (role === 'manager') {
+                userAvatar.textContent = "관";
+                userNameDisplay.textContent = "나의안전 관제자";
+                sideUsersMenu.classList.remove('hidden');
+                renderAdminAllSites();
+            } else {
+                userAvatar.textContent = "건";
+                userNameDisplay.textContent = `${currentUser.company} (${currentUser.name})`;
+                sideUsersMenu.classList.add('hidden');
+                renderPartnerSiteData();
+            }
+            switchSideView('dashboard');
+        }
+
+        // 2. 관리자 권한 (전체 건설회사 확인 및 편집)
+        function renderAdminAllSites() {
+            const tbody = document.getElementById('admin-all-sites-tbody');
+            const approved = userDatabase.filter(u => u.status === 'approved');
+
+            tbody.innerHTML = approved.map(u => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-bold text-slate-800">${u.company}</td>
+                    <td class="p-3">${u.siteName}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">작성완료</span></td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold">이수완료</span></td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">승인대기</span></td>
+                    <td class="p-3 text-center space-x-1">
+                        <button onclick="editSiteData('${u.company}')" class="px-2 py-1 bg-slate-800 text-white rounded font-bold text-[11px]">편집/수정</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            renderPendingUsers();
+        }
+
+        function editSiteData(company) {
+            const newSiteName = prompt(`[${company}] 의 수정할 현장명을 입력하세요:`);
+            if (newSiteName) {
+                const target = userDatabase.find(u => u.company === company);
+                if (target) {
+                    target.siteName = newSiteName;
+                    alert('현장 정보가 변경되었습니다.');
+                    renderAdminAllSites();
+                }
+            }
+        }
+
+        // 1. 건설회사 개별 권한 데이터
+        function renderPartnerSiteData() {
+            document.getElementById('partner-company-title').textContent = currentUser.company;
+            document.getElementById('partner-site-title').textContent = currentUser.siteName;
+        }
+
+        // 회원 승인 관리
+        function renderPendingUsers() {
+            const tbody = document.getElementById('pending-users-tbody');
+            const pending = userDatabase.filter(u => u.status === 'pending');
+
+            tbody.innerHTML = pending.length === 0 ? 
+                `<tr><td colspan="5" class="p-4 text-center text-slate-400">승인 대기 신청이 없습니다.</td></tr>` :
+                pending.map(u => `
+                    <tr>
+                        <td class="p-3 font-bold">${u.company}</td>
+                        <td class="p-3">${u.name}</td>
+                        <td class="p-3">${u.phone}</td>
+                        <td class="p-3">${u.email}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="approveUser(${u.id})" class="px-2.5 py-1 bg-emerald-600 text-white rounded font-bold">승인하기</button>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        function approveUser(id) {
+            const user = userDatabase.find(u => u.id === id);
+            if (user) {
+                user.status = 'approved';
+                alert(`[${user.company}] 회원이 승인되었습니다.`);
+                renderAdminAllSites();
+            }
+        }
+
+        // 복원된 각 사이드바 메뉴 렌더링
+        function renderRestoredPages() {
+            // 중대재해 알림
+            const alertBox = document.getElementById('alert-list-container');
+            alertBox.innerHTML = disasterAlerts.map(a => `
+                <div class="p-3 border border-rose-200 bg-rose-50 rounded-xl text-xs space-y-1">
+                    <div class="font-bold text-slate-900">${a.title}</div>
+                    <p class="text-slate-600">${a.content}</p>
+                </div>
+            `).join('');
+
+            // 서류 양식함
+            const docsBox = document.getElementById('docs-list-container');
+            docsBox.innerHTML = legalDocs.map(d => `
+                <div class="p-4 border rounded-xl bg-slate-50 flex flex-col justify-between text-xs space-y-2">
+                    <div class="font-bold text-slate-800">${d.title}</div>
+                    <button onclick="alert('양식이 다운로드됩니다.')" class="py-1 bg-white border rounded font-semibold">다운로드 (${d.ext})</button>
+                </div>
+            `).join('');
+
+            // 소통 게시판
+            const boardBox = document.getElementById('board-table-body');
+            boardBox.innerHTML = boardPosts.map(p => `
+                <tr class="hover:bg-slate-50 text-xs">
+                    <td class="p-3 font-bold text-indigo-600">${p.cat}</td>
+                    <td class="p-3 font-semibold text-slate-800">${p.title}</td>
+                    <td class="p-3 text-slate-600">${p.author}</td>
+                    <td class="p-3 text-center text-slate-400">${p.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function switchSideView(viewId) {
+            const views = ['dashboard-manager', 'dashboard-partner', 'page-side-users', 'page-side-alert', 'page-side-docs', 'page-side-board', 'page-side-notice'];
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            if (viewId === 'dashboard') {
+                if (currentRole === 'partner') document.getElementById('dashboard-partner').classList.remove('hidden');
+                else document.getElementById('dashboard-manager').classList.remove('hidden');
+            } else {
+                const target = document.getElementById(`page-side-${viewId}`);
+                if (target) target.classList.remove('hidden');
+            }
+            renderRestoredPages();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openSmartDocModal(day) { document.getElementById('modal-smart-doc').classList.remove('hidden'); }
+
+        function switchView(viewName) {
+            document.getElementById('view-landing').classList.toggle('hidden', viewName !== 'landing');
+            document.getElementById('view-app-main').classList.toggle('hidden', viewName === 'landing');
+        }
+
+        function switchLoginTab(tab) {
+            document.getElementById('btn-tab-partner').className = tab === 'partner' ? "py-2 rounded-lg bg-white text-emerald-900 shadow font-semibold" : "py-2 rounded-lg text-emerald-100";
+            document.getElementById('btn-tab-manager').className = tab === 'manager' ? "py-2 rounded-lg bg-white text-emerald-900 shadow font-semibold" : "py-2 rounded-lg text-emerald-100";
+            document.getElementById('form-partner-login').classList.toggle('hidden', tab !== 'partner');
+            document.getElementById('form-partner-signup').classList.add('hidden');
+            document.getElementById('form-manager-login').classList.toggle('hidden', tab === 'partner');
+        }
+
+        function toggleAuthMode(mode) {
+            document.getElementById('form-partner-login').classList.toggle('hidden', mode === 'partner-signup');
+            document.getElementById('form-partner-signup').classList.toggle('hidden', mode !== 'partner-signup');
+        }
+
+        function logout() {
+            currentUser = null;
+            switchView('landing');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderRestoredPages();
+        });
+    </script>
+</body>
+</html>
